@@ -36,7 +36,7 @@ public class HabitsController(ApplicationDbContext dbContext): ControllerBase
                 EndDate = h.EndDate,
                 Milestone = new MilestoneDto
                 {
-                    Current = h.Milestone.Current, 
+                    Current = h.Milestone!.Current, 
                     Target = h.Milestone.Target
                 },
                 CreatedAtUtc = h.CreatedAtUtc,
@@ -80,7 +80,7 @@ public class HabitsController(ApplicationDbContext dbContext): ControllerBase
                 EndDate = h.EndDate,
                 Milestone = new MilestoneDto
                 {
-                    Current = h.Milestone.Current, 
+                    Current = h.Milestone!.Current, 
                     Target = h.Milestone.Target
                 },
                 CreatedAtUtc = h.CreatedAtUtc,
@@ -95,5 +95,43 @@ public class HabitsController(ApplicationDbContext dbContext): ControllerBase
         }
             
         return Ok(habit);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<HabitDto>> CreateHabit(CreateHabitDto dto)
+    {
+            Habit habit = new()
+            {
+                Id = $"h_{Guid.CreateVersion7()}",
+                Name = dto.Name,
+                Description = dto.Description,
+                Type = dto.Type,
+                Frequency = new Frequency
+                {
+                    Type = dto.Frequency.Type,
+                    TimesPerPeriod = dto.Frequency.TimesPerPeriod
+                },
+                Target = new Target
+                {
+                    Value = dto.Target.Value,
+                    Unit = dto.Target.Unit
+                },
+                Status = HabitStatus.Ongoing,
+                IsArchived = false,
+                EndDate = dto.EndDate,
+                Milestone = dto.Milestone is not null
+                    ? new Milestone
+                    {
+                        Target = dto.Milestone.Target,
+                        Current = 0 // Initialize current progress to 0
+                    }
+                    : null,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            dbContext.Habits.Add(habit);
+            await dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetHabit), new { id = habit.Id }, habit);
     }
 }
