@@ -26,11 +26,13 @@ internal static class HabitQueries
             Status = h.Status,
             IsArchived = h.IsArchived,
             EndDate = h.EndDate,
-            Milestone = new MilestoneDto
-            {
-                Current = h.Milestone!.Current, 
-                Target = h.Milestone.Target
-            },
+            Milestone = h.Milestone == null
+                ? null
+                : new MilestoneDto
+                {
+                    Target = h.Milestone.Target,
+                    Current = h.Milestone.Current
+                },
             CreatedAtUtc = h.CreatedAtUtc,
             UpdatedAtUtc = h.UpdatedAtUtc,
             LastCompletedAtUtc = h.LastCompletedAtUtc
