@@ -7,7 +7,7 @@ internal static class HabitMappings
 { 
     public static HabitDto ToDto(this Habit habit)
     {
-        return new HabitDto
+        var dto = new HabitDto
         {
             Id = habit.Id,
             Name = habit.Name,
@@ -26,15 +26,19 @@ internal static class HabitMappings
             Status = habit.Status,
             IsArchived = habit.IsArchived,
             EndDate = habit.EndDate,
-            Milestone = new MilestoneDto
-            {
-                Current = habit.Milestone!.Current, 
-                Target = habit.Milestone.Target
-            },
+            Milestone = habit.Milestone == null
+                ? null
+                : new MilestoneDto
+                {
+                    Target = habit.Milestone.Target,
+                    Current = habit.Milestone.Current
+                },
             CreatedAtUtc = habit.CreatedAtUtc,
             UpdatedAtUtc = habit.UpdatedAtUtc,
             LastCompletedAtUtc = habit.LastCompletedAtUtc
         };
+
+        return dto;
     }
     public static Habit ToEntity(this CreateHabitDto dto)
     {
