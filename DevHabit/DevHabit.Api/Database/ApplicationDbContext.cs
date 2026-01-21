@@ -1,5 +1,6 @@
 ﻿using DevHabit.Api.Database.Configuration;
 using DevHabit.Api.Entities;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevHabit.Api.Database;
@@ -10,7 +11,15 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.HasDefaultSchema(Schemas.Application);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+        
+        // modelBuilder.AddBusOutboxStateEntity();
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }

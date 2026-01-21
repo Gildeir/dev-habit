@@ -2,14 +2,19 @@
 using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
+using DevHabit.Api.MassTransitContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MassTransit;
 
 namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("habits")]
-public class HabitsController(ApplicationDbContext dbContext): ControllerBase
+public class HabitsController(
+    ApplicationDbContext dbContext,
+    IPublishEndpoint  publishEndpoint
+    ): ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
@@ -52,6 +57,8 @@ public class HabitsController(ApplicationDbContext dbContext): ControllerBase
         dbContext.Habits.Add(habit);
         
         await dbContext.SaveChangesAsync();
+        
+        await publishEndpoint.Publish(new HabitCreated(habit.Id));
 
         HabitDto habitDto = habit.ToDto();
 
