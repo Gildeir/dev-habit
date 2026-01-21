@@ -8,6 +8,8 @@
 
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" />
+        <PackageReference Include="MassTransit" />
+        <PackageReference Include="MassTransit.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
           <PrivateAssets>all</PrivateAssets>
