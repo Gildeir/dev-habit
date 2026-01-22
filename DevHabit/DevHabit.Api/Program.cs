@@ -46,7 +46,7 @@ builder.Services.AddMassTransit(busRegistrationConfigurator =>
         .AddEntityFrameworkOutbox<ApplicationDbContext>(configurator =>
     {
         configurator.UsePostgres();
-        configurator.UseBusOutbox();
+        // configurator.UseBusOutbox();
 
         configurator.QueryDelay = TimeSpan.FromSeconds(10);
 

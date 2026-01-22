@@ -58,10 +58,12 @@ public class HabitsController(
         
         await dbContext.SaveChangesAsync();
         
-        await publishEndpoint.Publish(new HabitCreated(habit.Id));
-
         HabitDto habitDto = habit.ToDto();
 
+        MessageHabitDto message = habit.ToMessageDto();
+
+        await publishEndpoint.Publish(new HabitCreated(message));
+        
         return CreatedAtAction(nameof(GetHabit), new { id = habitDto.Id }, habitDto);
     }
 }

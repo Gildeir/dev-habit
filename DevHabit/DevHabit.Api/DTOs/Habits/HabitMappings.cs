@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using DevHabit.Api.Entities;
+using DevHabit.Api.MassTransitContracts;
 
 namespace DevHabit.Api.DTOs.Habits;
 
@@ -73,4 +74,37 @@ internal static class HabitMappings
         
         return habit;
     }
+    public static MessageHabitDto ToMessageDto(this Habit habit)
+    {
+        return new MessageHabitDto
+        {
+            Id = habit.Id,
+            Name = habit.Name,
+            Description = habit.Description,
+            Type = habit.Type,
+
+            Frequency = new MessageFrequencyDto
+            {
+                Type = habit.Frequency.Type,
+                TimesPerPeriod = habit.Frequency.TimesPerPeriod
+            },
+
+            Target = new MessageTargetDto
+            {
+                Value = habit.Target.Value,
+                Unit = habit.Target.Unit
+            },
+
+            EndDate = habit.EndDate,
+
+            Milestone = habit.Milestone is null
+            ? null
+            : new MessageMilestoneDto
+            {
+                Target = habit.Milestone.Target,
+                Current = habit.Milestone.Current
+            }
+        };
+    } 
 }
+

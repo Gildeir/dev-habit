@@ -7,7 +7,7 @@ public class HabitCreatedConsumer : IConsumer<HabitCreated>
 {
     public Task Consume(ConsumeContext<HabitCreated> context)
     {
-        Console.WriteLine($"[Consumer] HabitCreated received: {context.Message.HabitId}");
+        Console.WriteLine($"[Consumer] HabitCreated received: {context.Message.Habit}");
         return Task.CompletedTask;
     }
 }
