@@ -1,7 +1,10 @@
 using DevHabit.Api.Database;
 using DevHabit.Api.Extensions;
+using DevHabit.Api.MassTransitContracts;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -19,7 +22,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("Database"),
-        npgsqlOtions => npgsqlOtions
+        npgsqlOptions => npgsqlOptions
             .MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Application))
     .UseSnakeCaseNamingConvention());
 
@@ -34,6 +37,27 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddRuntimeInstrumentation())
     .UseOtlpExporter();
+
+builder.Services.AddMassTransit(busRegistrationConfigurator =>
+{
+    busRegistrationConfigurator.AddConsumer<HabitCreatedConsumer>();
+
+    busRegistrationConfigurator
+        .AddEntityFrameworkOutbox<ApplicationDbContext>(configurator =>
+    {
+        configurator.UsePostgres();
+        // configurator.UseBusOutbox();
+    });
+    
+    busRegistrationConfigurator.UsingInMemory((context, cfg) =>
+    {
+        cfg.ReceiveEndpoint("habit-created", e =>
+        {
+            e.ConfigureConsumer<HabitCreatedConsumer>(context);
+        });
+    });
+    
+});
 
 WebApplication app = builder.Build();
 

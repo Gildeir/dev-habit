@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using DevHabit.Api.Entities;
+using DevHabit.Api.MassTransitContracts;
 
 namespace DevHabit.Api.DTOs.Habits;
 
@@ -73,4 +74,69 @@ internal static class HabitMappings
         
         return habit;
     }
+    public static MessageHabitDto ToMessageDto(this Habit habit)
+    {
+        return new MessageHabitDto
+        {
+            Id = habit.Id,
+            Name = habit.Name,
+            Description = habit.Description,
+            Type = habit.Type,
+
+            Frequency = new MessageFrequencyDto
+            {
+                Type = habit.Frequency.Type,
+                TimesPerPeriod = habit.Frequency.TimesPerPeriod
+            },
+
+            Target = new MessageTargetDto
+            {
+                Value = habit.Target.Value,
+                Unit = habit.Target.Unit
+            },
+
+            EndDate = habit.EndDate,
+
+            Milestone = habit.Milestone is null
+            ? null
+            : new MessageMilestoneDto
+            {
+                Target = habit.Milestone.Target,
+                Current = habit.Milestone.Current
+            }
+        };
+    } 
+    public static void UpdateFromDto(this Habit habit, UpdateHabitDto dto)
+    {
+        // Update basic properties
+        habit.Name = dto.Name;
+        habit.Description = dto.Description;
+        habit.Type = dto.Type;
+        habit.EndDate = dto.EndDate;
+
+        // Update frequency (assuming it's immutable, create new instance)
+        habit.Frequency = new Frequency
+        {
+            Type = dto.Frequency.Type,
+            TimesPerPeriod = dto.Frequency.TimesPerPeriod
+        };
+
+        // Update target
+        habit.Target = new Target
+        {
+            Value = dto.Target.Value,
+            Unit = dto.Target.Unit
+        };
+
+        // Update milestone if provided
+        if (dto.Milestone != null)
+        {
+            habit.Milestone ??= new Milestone(); // Create new if doesn't exist
+            habit.Milestone.Target = dto.Milestone.Target;
+            // Note: We don't update Milestone.Current from DTO to preserve progress
+        }
+
+        habit.UpdatedAtUtc = DateTime.UtcNow;
+    }
 }
+
