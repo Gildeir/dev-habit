@@ -47,9 +47,6 @@ builder.Services.AddMassTransit(busRegistrationConfigurator =>
     {
         configurator.UsePostgres();
         // configurator.UseBusOutbox();
-
-        configurator.QueryDelay = TimeSpan.FromSeconds(10);
-
     });
     
     busRegistrationConfigurator.UsingInMemory((context, cfg) =>

@@ -12,14 +12,14 @@ namespace DevHabit.Api.Controllers;
 [ApiController]
 [Route("habits")]
 public class HabitsController(
-    ApplicationDbContext dbContext,
+    ApplicationDbContext _dbContext,
     IPublishEndpoint  publishEndpoint
     ): ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
     {
-        List<HabitDto> habit = await dbContext
+        List<HabitDto> habit = await _dbContext
             .Habits
             .Select(HabitQueries.ProjectToDto())
             .ToListAsync();
@@ -35,7 +35,7 @@ public class HabitsController(
     [HttpGet("{id}")]
     public async Task<ActionResult<HabitsCollectionDto>> GetHabit(string id)
     {
-        HabitDto? habit = await dbContext
+        HabitDto? habit = await _dbContext
             .Habits
             .Where(h => h.Id == id)
             .Select(HabitQueries.ProjectToDto())
@@ -54,9 +54,9 @@ public class HabitsController(
     {
         Habit habit = dto.ToEntity();
         
-        dbContext.Habits.Add(habit);
+        _dbContext.Habits.Add(habit);
         
-        await dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
         
         HabitDto habitDto = habit.ToDto();
 
@@ -65,5 +65,21 @@ public class HabitsController(
         await publishEndpoint.Publish(new HabitCreated(message));
         
         return CreatedAtAction(nameof(GetHabit), new { id = habitDto.Id }, habitDto);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateHabit(string id, [FromBody] UpdateHabitDto updateHabitDto)
+    {
+        Habit? habit = await _dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        habit.UpdateFromDto(updateHabitDto);
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
     }
 }
