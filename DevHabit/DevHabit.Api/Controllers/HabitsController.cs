@@ -125,7 +125,7 @@ public class HabitsController(
 
         await _dbContext.SaveChangesAsync();
 
-        return Ok();
+        return NoContent();
 
     }
 }
