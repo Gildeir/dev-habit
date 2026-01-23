@@ -1,11 +1,11 @@
-﻿using System.Linq.Expressions;
-using DevHabit.Api.Database;
+﻿using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
 using DevHabit.Api.MassTransitContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MassTransit;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace DevHabit.Api.Controllers;
 
@@ -33,7 +33,7 @@ public class HabitsController(
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabit(string id)
+    public async Task<ActionResult<HabitDto>> GetHabit(string id)
     {
         HabitDto? habit = await _dbContext
             .Habits
@@ -81,5 +81,51 @@ public class HabitsController(
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> PatchHabit(string id, JsonPatchDocument<HabitDto> patchDocument)
+    {
+        Habit? habit = await _dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        HabitDto habitDto = habit.ToDto();
+        
+        patchDocument.ApplyTo(habitDto, ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        habit.Name = habitDto.Name;
+        habit.Description = habitDto.Description;
+        habit.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteHabit(string id)
+    {
+        Habit? habit = await _dbContext.Habits
+            .FirstOrDefaultAsync(h => h.Id == id);
+
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        _dbContext.Habits.Remove(habit);
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok();
+
     }
 }
