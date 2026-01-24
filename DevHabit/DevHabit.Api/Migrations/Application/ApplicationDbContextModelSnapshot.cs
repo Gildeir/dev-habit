@@ -75,6 +75,29 @@ namespace DevHabit.Api.Migrations.Application
                     b.ToTable("habits", "dev_habit");
                 });
 
+            modelBuilder.Entity("DevHabit.Api.Entities.HabitTag", b =>
+                {
+                    b.Property<string>("HabitId")
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("habit_id");
+
+                    b.Property<string>("TagId")
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tag_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.HasKey("HabitId", "TagId")
+                        .HasName("pk_habit_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_habit_tags_tag_id");
+
+                    b.ToTable("habit_tags", "dev_habit");
+                });
+
             modelBuilder.Entity("DevHabit.Api.Entities.Tag", b =>
                 {
                     b.Property<string>("Id")
@@ -411,6 +434,23 @@ namespace DevHabit.Api.Migrations.Application
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DevHabit.Api.Entities.HabitTag", b =>
+                {
+                    b.HasOne("DevHabit.Api.Entities.Habit", null)
+                        .WithMany("HabitTags")
+                        .HasForeignKey("HabitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_habit_tags_habits_habit_id");
+
+                    b.HasOne("DevHabit.Api.Entities.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_habit_tags_tags_tag_id");
+                });
+
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
                 {
                     b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
@@ -423,6 +463,11 @@ namespace DevHabit.Api.Migrations.Application
                         .HasForeignKey("InboxMessageId", "InboxConsumerId")
                         .HasPrincipalKey("MessageId", "ConsumerId")
                         .HasConstraintName("fk_outbox_message_inbox_state_inbox_message_id_inbox_consumer_");
+                });
+
+            modelBuilder.Entity("DevHabit.Api.Entities.Habit", b =>
+                {
+                    b.Navigation("HabitTags");
                 });
 #pragma warning restore 612, 618
         }
