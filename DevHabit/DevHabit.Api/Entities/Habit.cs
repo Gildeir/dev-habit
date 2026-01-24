@@ -14,6 +14,8 @@ public sealed class Habit
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
     public DateTime? LastCompletedAtUtc { get; set; }
+    public List<HabitTag> HabitTags { get; set; } = new();
+    public List<Tag> Tags { get; set; } = new();
     public HabitType Type { get; set; }
 }
 public enum HabitType
